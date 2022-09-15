@@ -18,3 +18,7 @@ RUN apt-get update \
 # [Optional] Uncomment this section to install additional packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
+
+RUN pwsh -Command Set-PSRepository -Name PSGallery -InstallationPolicy Trusted && \
+    pwsh -Command Install-Module -Name Microsoft.Graph -Scope AllUsers -Repository PSGallery && \
+    pwsh -Command Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted
