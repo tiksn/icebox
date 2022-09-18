@@ -50,10 +50,10 @@ function ArePhysicalAddressesIdentical {
     param ($x, $y)
 
     if (($null -eq $x) -and ($null -eq $y)) {
-        $true
+        return $true
     }
 
-    (($x.City -eq $y.City) -and
+    return (($x.City -eq $y.City) -and
     ($x.CountryOrRegion -eq $y.CountryOrRegion) -and
     ($x.PostalCode -eq $y.PostalCode) -and
     ($x.State -eq $y.State) -and
@@ -64,37 +64,51 @@ function AreBusinessHomePagesIdentical {
     param ($x, $y)
 
     if (($null -eq $x) -and ($null -eq $y)) {
-        $true
+        return $true
     }
 
     if ($x -eq $y) {
-        $true
+        return $true
     }
 
-    $true
+    return $true
     # $xr = Invoke-WebRequest -Uri $x
     # $yr = Invoke-WebRequest -Uri $y
     # $xrs = $xr.StatusCode
     # $yrs = $yr.StatusCode
 
-    $true
-    # $false
+    # return $false
 }
 
 function AreObjectsIdentical {
     param ($x, $y)
 
     if (($null -eq $x) -and ($null -eq $y)) {
-        $true
+        return $true
     }
 
     $d = Compare-Object -ReferenceObject $x -DifferenceObject $y
     if ($d) {
-        $false
+        return $false
     }
     else {
-        $true
+        return $true
     }
+}
+
+function ArePhotosIdentical {
+    param ($x, $y)
+
+    if (($null -eq $x) -and ($null -eq $y)) {
+        return $true
+    }
+
+    if ($x.Id -eq $y.Id) {
+        return $true
+    }
+
+    return (($x.Height -eq $y.Height) -and
+    ($x.Width -eq $y.Width))
 }
 
 try {
@@ -113,10 +127,14 @@ try {
 
     foreach ($contactGroup in $contactGroups) {
         $firstContactInGroup = $contactGroup.Group[0]
+        Write-Debug -Message "Examining Group $($contactGroup.Name)"
+        Write-Debug -Message "First Contact ID: $($firstContactInGroup.Id)"
         for ($i = 1; $i -lt $contactGroup.Group.Count; $i++) {
             $anotherContactInGroup = $contactGroup.Group[$i]
 
-            $areIdentical = (
+            Write-Debug -Message "Another Contact ID: $($anotherContactInGroup.Id)"
+
+            $hasAllInfo = (
                 ($firstContactInGroup.AssistantName -eq $anotherContactInGroup.AssistantName) -and
                 ($firstContactInGroup.Birthday -eq $anotherContactInGroup.Birthday) -and
                 (ArePhysicalAddressesIdentical $firstContactInGroup.BusinessAddress $anotherContactInGroup.BusinessAddress) -and
@@ -141,8 +159,8 @@ try {
                 ($firstContactInGroup.NickName -eq $anotherContactInGroup.NickName) -and
                 ($firstContactInGroup.OfficeLocation -eq $anotherContactInGroup.OfficeLocation) -and
                 (ArePhysicalAddressesIdentical $firstContactInGroup.OtherAddress $anotherContactInGroup.OtherAddress) -and
-                ($firstContactInGroup.PersonalNotes -eq $anotherContactInGroup.PersonalNotes) -and
-                ($firstContactInGroup.Photo -eq $anotherContactInGroup.Photo) -and
+                (-not $anotherContactInGroup.PersonalNotes) -and
+                (ArePhotosIdentical $firstContactInGroup.Photo $anotherContactInGroup.Photo) -and
                 ($firstContactInGroup.Profession -eq $anotherContactInGroup.Profession) -and
                 ($firstContactInGroup.SingleValueExtendedProperties -eq $anotherContactInGroup.SingleValueExtendedProperties) -and
                 ($firstContactInGroup.SpouseName -eq $anotherContactInGroup.SpouseName) -and
@@ -154,7 +172,11 @@ try {
                 ($firstContactInGroup.AdditionalProperties -eq $anotherContactInGroup.AdditionalProperties)
             )
 
-            $areIdentical
+            Write-Debug -Message "First Conact Has All Info: $hasAllInfo"
+
+            $anotherContactHasAdditionalInfo = (-not $anotherContactInGroup.PersonalNotes)
+
+            Write-Debug -Message "Another Contact Has Additional Info: $anotherContactHasAdditionalInfo"
         }
     }
 }
