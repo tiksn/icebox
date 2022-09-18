@@ -130,8 +130,8 @@ try {
                 ($firstContactInGroup.Generation -eq $anotherContactInGroup.Generation) -and
                 ($firstContactInGroup.GivenName -eq $anotherContactInGroup.GivenName) -and
                 (ArePhysicalAddressesIdentical $firstContactInGroup.HomeAddress $anotherContactInGroup.HomeAddress) -and
-                ($firstContactInGroup.HomePhones -eq $anotherContactInGroup.HomePhones) -and
-                ($firstContactInGroup.ImAddresses -eq $anotherContactInGroup.ImAddresses) -and
+                (AreObjectsIdentical $firstContactInGroup.HomePhones $anotherContactInGroup.HomePhones) -and
+                (AreObjectsIdentical $firstContactInGroup.ImAddresses $anotherContactInGroup.ImAddresses) -and
                 ($firstContactInGroup.Initials -eq $anotherContactInGroup.Initials) -and
                 ($firstContactInGroup.JobTitle -eq $anotherContactInGroup.JobTitle) -and
                 ($firstContactInGroup.Manager -eq $anotherContactInGroup.Manager) -and
@@ -140,7 +140,7 @@ try {
                 ($firstContactInGroup.MultiValueExtendedProperties -eq $anotherContactInGroup.MultiValueExtendedProperties) -and
                 ($firstContactInGroup.NickName -eq $anotherContactInGroup.NickName) -and
                 ($firstContactInGroup.OfficeLocation -eq $anotherContactInGroup.OfficeLocation) -and
-                ($firstContactInGroup.OtherAddress -eq $anotherContactInGroup.OtherAddress) -and
+                (ArePhysicalAddressesIdentical $firstContactInGroup.OtherAddress $anotherContactInGroup.OtherAddress) -and
                 ($firstContactInGroup.PersonalNotes -eq $anotherContactInGroup.PersonalNotes) -and
                 ($firstContactInGroup.Photo -eq $anotherContactInGroup.Photo) -and
                 ($firstContactInGroup.Profession -eq $anotherContactInGroup.Profession) -and
@@ -153,6 +153,7 @@ try {
                 ($firstContactInGroup.YomiSurname -eq $anotherContactInGroup.YomiSurname) -and
                 ($firstContactInGroup.AdditionalProperties -eq $anotherContactInGroup.AdditionalProperties)
             )
+
             $areIdentical
         }
     }
