@@ -46,6 +46,20 @@
 param (
 )
 
+function AreBusinessAddressesIdentical {
+    param ($x, $y)
+
+    if (($null -eq $x) -and ($null -eq $y)) {
+        $true
+    }
+
+    (($x.City -eq $y.City) -and
+    ($x.CountryOrRegion -eq $y.CountryOrRegion) -and
+    ($x.PostalCode -eq $y.PostalCode) -and
+    ($x.State -eq $y.State) -and
+    ($x.Street -eq $y.Street))
+}
+
 try {
     Import-Module -Name Microsoft.Graph
 
@@ -68,7 +82,7 @@ try {
             $areIdentical = (
                 ($firstContactInGroup.AssistantName -eq $anotherContactInGroup.AssistantName) -and
                 ($firstContactInGroup.Birthday -eq $anotherContactInGroup.Birthday) -and
-                ($firstContactInGroup.BusinessAddress -eq $anotherContactInGroup.BusinessAddress) -and
+                (AreBusinessAddressesIdentical $firstContactInGroup.BusinessAddress $anotherContactInGroup.BusinessAddress) -and
                 ($firstContactInGroup.BusinessHomePage -eq $anotherContactInGroup.BusinessHomePage) -and
                 ($firstContactInGroup.BusinessPhones -eq $anotherContactInGroup.BusinessPhones) -and
                 ($firstContactInGroup.CompanyName -eq $anotherContactInGroup.CompanyName) -and
