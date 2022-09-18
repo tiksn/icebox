@@ -96,6 +96,22 @@ function AreObjectsIdentical {
     }
 }
 
+function AreAdditionalPropertiesIdentical {
+    param ($x, $y)
+
+    if (($null -eq $x) -and ($null -eq $y)) {
+        return $true
+    }
+
+    $d = Compare-Object -ReferenceObject $x -DifferenceObject $y
+    if ($d) {
+        return $false
+    }
+    else {
+        return $true
+    }
+}
+
 function ArePhotosIdentical {
     param ($x, $y)
 
@@ -169,7 +185,7 @@ try {
                 ($firstContactInGroup.YomiCompanyName -eq $anotherContactInGroup.YomiCompanyName) -and
                 ($firstContactInGroup.YomiGivenName -eq $anotherContactInGroup.YomiGivenName) -and
                 ($firstContactInGroup.YomiSurname -eq $anotherContactInGroup.YomiSurname) -and
-                ($firstContactInGroup.AdditionalProperties -eq $anotherContactInGroup.AdditionalProperties)
+                (AreAdditionalPropertiesIdentical $firstContactInGroup.AdditionalProperties $anotherContactInGroup.AdditionalProperties)
             )
 
             Write-Debug -Message "First Conact Has All Info: $hasAllInfo"
