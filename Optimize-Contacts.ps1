@@ -46,7 +46,7 @@
 param (
 )
 
-function AreBusinessAddressesIdentical {
+function ArePhysicalAddressesIdentical {
     param ($x, $y)
 
     if (($null -eq $x) -and ($null -eq $y)) {
@@ -58,6 +58,43 @@ function AreBusinessAddressesIdentical {
     ($x.PostalCode -eq $y.PostalCode) -and
     ($x.State -eq $y.State) -and
     ($x.Street -eq $y.Street))
+}
+
+function AreBusinessHomePagesIdentical {
+    param ($x, $y)
+
+    if (($null -eq $x) -and ($null -eq $y)) {
+        $true
+    }
+
+    if ($x -eq $y) {
+        $true
+    }
+
+    $true
+    # $xr = Invoke-WebRequest -Uri $x
+    # $yr = Invoke-WebRequest -Uri $y
+    # $xrs = $xr.StatusCode
+    # $yrs = $yr.StatusCode
+
+    $true
+    # $false
+}
+
+function AreObjectsIdentical {
+    param ($x, $y)
+
+    if (($null -eq $x) -and ($null -eq $y)) {
+        $true
+    }
+
+    $d = Compare-Object -ReferenceObject $x -DifferenceObject $y
+    if ($d) {
+        $false
+    }
+    else {
+        $true
+    }
 }
 
 try {
@@ -82,17 +119,17 @@ try {
             $areIdentical = (
                 ($firstContactInGroup.AssistantName -eq $anotherContactInGroup.AssistantName) -and
                 ($firstContactInGroup.Birthday -eq $anotherContactInGroup.Birthday) -and
-                (AreBusinessAddressesIdentical $firstContactInGroup.BusinessAddress $anotherContactInGroup.BusinessAddress) -and
-                ($firstContactInGroup.BusinessHomePage -eq $anotherContactInGroup.BusinessHomePage) -and
-                ($firstContactInGroup.BusinessPhones -eq $anotherContactInGroup.BusinessPhones) -and
+                (ArePhysicalAddressesIdentical $firstContactInGroup.BusinessAddress $anotherContactInGroup.BusinessAddress) -and
+                (AreBusinessHomePagesIdentical $firstContactInGroup.BusinessHomePage $anotherContactInGroup.BusinessHomePage) -and
+                (AreObjectsIdentical $firstContactInGroup.BusinessPhones $anotherContactInGroup.BusinessPhones) -and
                 ($firstContactInGroup.CompanyName -eq $anotherContactInGroup.CompanyName) -and
                 ($firstContactInGroup.DisplayName -eq $anotherContactInGroup.DisplayName) -and
-                ($firstContactInGroup.EmailAddresses -eq $anotherContactInGroup.EmailAddresses) -and
+                (AreObjectsIdentical $firstContactInGroup.EmailAddresses $anotherContactInGroup.EmailAddresses) -and
                 ($firstContactInGroup.Extensions -eq $anotherContactInGroup.Extensions) -and
                 ($firstContactInGroup.FileAs -eq $anotherContactInGroup.FileAs) -and
                 ($firstContactInGroup.Generation -eq $anotherContactInGroup.Generation) -and
                 ($firstContactInGroup.GivenName -eq $anotherContactInGroup.GivenName) -and
-                ($firstContactInGroup.HomeAddress -eq $anotherContactInGroup.HomeAddress) -and
+                (ArePhysicalAddressesIdentical $firstContactInGroup.HomeAddress $anotherContactInGroup.HomeAddress) -and
                 ($firstContactInGroup.HomePhones -eq $anotherContactInGroup.HomePhones) -and
                 ($firstContactInGroup.ImAddresses -eq $anotherContactInGroup.ImAddresses) -and
                 ($firstContactInGroup.Initials -eq $anotherContactInGroup.Initials) -and
