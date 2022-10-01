@@ -127,6 +127,20 @@ function ArePhotosIdentical {
     ($x.Width -eq $y.Width))
 }
 
+function ToContactObject {
+    param ($x)
+
+    $x = $firstContactInGroup.ToJsonString() | ConvertFrom-Json -Depth 100
+    $x.'id' = $null
+    $x.'changeKey' = $null
+    $x.'parentFolderId' = $null
+    $x.'@odata.etag' = $null
+    $x.'createdDateTime' = $null
+    $x.'lastModifiedDateTime' = $null
+
+    return $x
+}
+
 try {
     Import-Module -Name Microsoft.Graph
 
@@ -134,8 +148,7 @@ try {
     $mgUser = Get-MgUser
     Write-Information "Microsoft Graph user is $($mgUser.DisplayName)"
 
-    # $userContacts = Get-MgUserContact -UserId $mgUser.Id -All
-    $userContacts = Get-MgUserContact -UserId $mgUser.Id -Skip 0 -Top 1000
+    $userContacts = Get-MgUserContact -UserId $mgUser.Id -All
 
     $contactGroups = $userContacts
     | Group-Object -Property BusinessPhone , MobilePhone
@@ -143,14 +156,32 @@ try {
 
     foreach ($contactGroup in $contactGroups) {
         $firstContactInGroup = $contactGroup.Group[0]
+        $firstContactObject = ToContactObject $firstContactInGroup
+        $firstContactJson = $firstContactObject | ConvertTo-Json -Depth 100
+
         Write-Debug -Message "Examining Group $($contactGroup.Name)"
         Write-Debug -Message "First Contact ID: $($firstContactInGroup.Id)"
+
         for ($i = 1; $i -lt $contactGroup.Group.Count; $i++) {
             $anotherContactInGroup = $contactGroup.Group[$i]
+            $anotherContactObject = ToContactObject $anotherContactInGroup
+            $anotherContactJson = $anotherContactObject | ConvertTo-Json -Depth 100
 
             Write-Debug -Message "Another Contact ID: $($anotherContactInGroup.Id)"
 
-            $hasAllInfo = (
+            $diffJson = Compare-Object -ReferenceObject $firstContactJson -DifferenceObject $anotherContactJson
+
+            if ($null -eq $diffJson) {
+                # Contacts are Identical
+                $target = "First Contact JSON: $firstContactJson" + [System.Environment]::NewLine + "Another Contact JSON: $anotherContactJson"
+                if ($PSCmdlet.ShouldProcess($target, 'Delete Contact')) {
+                    Write-Debug -Message "Another Contact (ID: $($anotherContactInGroup.Id)) estimated to be deleted"
+
+                    Remove-MgUserContact -UserId $mgUser.Id -ContactId $anotherContactInGroup.Id
+                }
+            }
+            else {
+                $hasAllInfo = (
                 ($firstContactInGroup.AssistantName -eq $anotherContactInGroup.AssistantName) -and
                 ($firstContactInGroup.Birthday -eq $anotherContactInGroup.Birthday) -and
                 (ArePhysicalAddressesIdentical $firstContactInGroup.BusinessAddress $anotherContactInGroup.BusinessAddress) -and
@@ -186,13 +217,14 @@ try {
                 ($firstContactInGroup.YomiGivenName -eq $anotherContactInGroup.YomiGivenName) -and
                 ($firstContactInGroup.YomiSurname -eq $anotherContactInGroup.YomiSurname) -and
                 (AreAdditionalPropertiesIdentical $firstContactInGroup.AdditionalProperties $anotherContactInGroup.AdditionalProperties)
-            )
+                )
 
-            Write-Debug -Message "First Conact Has All Info: $hasAllInfo"
+                Write-Debug -Message "First Conact Has All Info: $hasAllInfo"
 
-            $anotherContactHasAdditionalInfo = (-not $anotherContactInGroup.PersonalNotes)
+                $anotherContactHasAdditionalInfo = (-not $anotherContactInGroup.PersonalNotes)
 
-            Write-Debug -Message "Another Contact Has Additional Info: $anotherContactHasAdditionalInfo"
+                Write-Debug -Message "Another Contact Has Additional Info: $anotherContactHasAdditionalInfo"
+            }
         }
     }
 }
