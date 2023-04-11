@@ -3,7 +3,6 @@
         "ms-dotnettools.vscode-dotnet-pack",
         "editorconfig.editorconfig",
         "visualstudioexptteam.vscodeintellicode",
-        "visualstudioexptteam.intellicode-api-usage-examples",
         "ms-vsliveshare.vsliveshare-pack",
         "pspester.pester-test",
         "ms-vscode.powershell"
